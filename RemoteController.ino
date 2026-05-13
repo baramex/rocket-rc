@@ -60,13 +60,13 @@ void setup() {
   Serial.begin(9600);
 
   // Screen
-  lcd.init();
+  /*lcd.init();
   lcd.backlight();
   lcd.setCursor(5, 1);
   lcd.print("FourSight");
   lcd.setCursor(1, 2);
   lcd.print("Remote Controller");
-  lcd.createChar(0, degreeSymbol);
+  lcd.createChar(0, degreeSymbol);*/
 
   // Pinout
   pinMode(buttonIn, INPUT_PULLUP);
@@ -87,7 +87,9 @@ void setup() {
   LoRa.setSyncWord(0xD5);
   LoRa.setTxPower(20);
 
-  lcd.clear();
+  //lcd.clear();
+
+  Serial.println("Init");
 
   updateSignalStatus();
   updateDirection();
@@ -102,10 +104,11 @@ void loop() {
     transmitToPL();
     lastTransmit = now;
   }
+  delay(5);
 
   // Receive packet
-  const unsigned packetSize = LoRa.parsePacket(/*16*/);
-  if (packetSize) {
+  //const unsigned packetSize = LoRa.parsePacket(/*16*/);
+  /*if (packetSize && now - lastReceive >= 500) {
     if (receiveFromPL()) {
       flushLoRa();
       updateRssi();
@@ -116,7 +119,7 @@ void loop() {
       }
       lastReceive = now;
     }
-  }
+  }*/
 
   if (lastReceive && now - lastReceive > 5000 && !lostSignal) {
     lostSignal = true;
@@ -212,10 +215,13 @@ void flushLoRa() {
 }
 
 void transmitToPL() {
-  if (!LoRa.beginPacket(true)) return;
+  if (!LoRa.beginPacket()) return;
   if (mode == LOCKED) direction = STRAIGHT;
   LoRa.write(0xC4);
-  LoRa.write(mode | (direction << 1));
+  LoRa.print(mode);
+  LoRa.print(",");
+  LoRa.print(direction);
+  Serial.println("Sending");
   LoRa.endPacket();
   Serial.println("Send");
 }
@@ -264,45 +270,45 @@ PlDirection getJoystickDirection() {
 }
 
 void updateRssi() {
-  lcd.setCursor(0, 0);
-  printSection(String(rssi), 4);
+  //lcd.setCursor(0, 0);
+  //printSection(String(rssi), 4);
   Serial.println("Update RSSI: " + String(rssi));
 }
 
 void updateSignalStatus() {
-  lcd.setCursor(4, 0);
-  printSection(lostSignal ? "NO SIGNAL" : "OK", 9);
+  //lcd.setCursor(4, 0);
+  //printSection(lostSignal ? "NO SIGNAL" : "OK", 9);
 }
 
 void updateCoordinates() {
-  lcd.setCursor(0, 1);
+  /*lcd.setCursor(0, 1);
   lcd.print(String(latitude, 5));
   lcd.write(0);
   lcd.print("," + String(longitude, 5));
-  lcd.write(0);
+  lcd.write(0);*/
   Serial.println("Update coordinates: " + String(latitude, 5) + " " + String(longitude, 5));
 }
 
 void updateAltitude() {
-  lcd.setCursor(0, 2);
-  printSection(String(altitude, 1) + "m", 8);
+  /*lcd.setCursor(0, 2);
+  printSection(String(altitude, 1) + "m", 8);*/
   Serial.println("Update altitude: " + String(altitude, 1));
 }
 
 void updateState() {
-  lcd.setCursor(8, 2);
-  printSection(getStringState(), 12);
+  /*lcd.setCursor(8, 2);
+  printSection(getStringState(), 12);*/
   Serial.println("Update state: " + getStringState());
 }
 
 void updateMotorPosition() {
-  lcd.setCursor(0, 3);
-  printSection("L:" + String(leftMotor * 100 / 255) + "%,R:" + String(rightMotor * 100 / 255) + "%", 12);
+  /*lcd.setCursor(0, 3);
+  printSection("L:" + String(leftMotor * 100 / 255) + "%,R:" + String(rightMotor * 100 / 255) + "%", 12);*/
   Serial.println("Update motor positon: L:" + String(leftMotor * 100 / 255) + "%,R:" + String(rightMotor * 100 / 255) + "%");
 }
 
 void updateDirection() {
-  lcd.setCursor(12, 3);
+  //lcd.setCursor(12, 3);
   String dir;
   switch (direction) {
     case RIGHT: dir = "RIGHT"; break;
@@ -311,7 +317,7 @@ void updateDirection() {
     case DOWN: dir = "DOWN"; break;
     case STRAIGHT: dir = "STRAIGHT"; break;
   }
-  printSection(mode == LOCKED ? "LOCKED" : dir, 8);
+  //printSection(mode == LOCKED ? "LOCKED" : dir, 8);
   Serial.println("Update direction: " + dir);
 }
 
